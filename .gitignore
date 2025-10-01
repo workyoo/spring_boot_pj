@@ -1,0 +1,46 @@
+# === OS 공통 ===
+.DS_Store
+Thumbs.db
+.metadata/
+
+# === 에디터/IDE 공통 ===
+.vscode/
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+
+# === Java (Spring Boot) ===
+/Spring4989/.gradle/
+/Spring4989/build/
+/Spring4989/bin/
+/Spring4989/out/
+/Spring4989/.idea/
+!Spring4989/gradle/wrapper/gradle-wrapper.jar
+!Spring4989/gradle/wrapper/gradle-wrapper.properties
+
+# === Node.js (React, Vite) ===
+/Project4989/node_modules/
+/Project4989/dist/
+/Project4989/build/
+/Project4989/.env
+/Project4989/.env.local
+/Project4989/.env.development.local
+/Project4989/.env.production
+/Project4989/.env.production.local
+/Project4989/.env.test
+/Project4989/.env.test.local
+/Project4989/.DS_Store
+/Project4989/.eslintcache
+/Project4989/.parcel-cache
+/Project4989/.turbo
+/Project4989/.vite/
+
+# === 로그(공통) ===
+**/*.log
+
+# === Secret files (예: API Key 등) ===
+application.yml
+application-oauth.yml
+application-coolsms.yml

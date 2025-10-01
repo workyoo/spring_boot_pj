@@ -1,0 +1,32 @@
+/* 푸터 전체 스타일 */
+.MuiBox-root[component="footer"] {
+  font-family: inherit !important;
+}
+
+/* 링크 호버 효과 */
+.MuiLink-root {
+  transition: all 0.2s ease !important;
+}
+
+.MuiLink-root:hover {
+  color: #4F684E !important;
+  text-decoration: none !important;
+}
+
+/* 푸터 텍스트 스타일 */
+.MuiTypography-root {
+  font-family: inherit !important;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .MuiContainer-root {
+    padding: 0 16px !important;
+  }
+  
+  .MuiBox-root[component="footer"] {
+    height: auto !important;
+    min-height: 100px !important;
+    padding: 20px 0 !important;
+  }
+} 

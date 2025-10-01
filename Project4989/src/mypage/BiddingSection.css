@@ -1,0 +1,319 @@
+/* 입찰중 전용 스타일 */
+.bidding-section-container {
+  padding: 24px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.bidding-tabs-container {
+  margin-bottom: 32px;
+  padding: 24px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.bidding-tab-panel {
+  padding: 24px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.bidding-posts-title {
+  margin-bottom: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.bidding-loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.bidding-loading-content {
+  text-align: center;
+}
+
+.bidding-loading-spinner {
+  color: #3498db;
+  margin-bottom: 16px;
+}
+
+.bidding-loading-text {
+  font-weight: 600;
+}
+
+.bidding-empty-container {
+  text-align: center;
+  padding: 48px;
+}
+
+.bidding-empty-title {
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.bidding-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 320px);
+  gap: 20px;
+  justify-content: center;
+}
+
+.bidding-post-card {
+  width: 320px;
+  height: 450px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+
+.bidding-post-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.bidding-post-image-container {
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bidding-post-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease-in-out;
+}
+
+.bidding-post-card:hover .bidding-post-image {
+  transform: scale(1.05);
+}
+
+.bidding-post-no-image {
+  height: 200px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.bidding-post-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  height: 250px;
+  overflow: hidden;
+}
+
+.bidding-post-chips {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+  height: 28px;
+  align-items: center;
+}
+
+.bidding-post-chip {
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.7rem;
+  height: 20px;
+}
+
+.bidding-post-title {
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+  color: #2c3e50;
+  height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.bidding-post-description {
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+  font-size: 0.75rem;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.bidding-post-price {
+  margin-bottom: 6px;
+  padding: 6px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.bidding-post-price-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: #e74c3c;
+  font-size: 0.8rem;
+}
+
+.bidding-post-bid-info {
+  margin-bottom: 6px;
+  padding: 6px;
+  background-color: #e3f2fd;
+  border-radius: 6px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.bidding-post-bid-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #1976d2;
+  font-size: 0.8rem;
+}
+
+.bidding-post-view-count {
+  margin-bottom: 6px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.bidding-post-view-count-text {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+}
+
+.bidding-post-dates {
+  margin-bottom: 6px;
+  height: 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.bidding-post-date-text {
+  font-size: 0.7rem;
+  margin-bottom: 3px;
+}
+
+.bidding-post-status {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.7rem;
+  padding: 3px;
+  background-color: #f1f3f4;
+  border-radius: 3px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.bidding-pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  padding: 24px;
+}
+
+.bidding-pagination-item {
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  min-width: 40px;
+  height: 40px;
+  transition: all 0.3s ease;
+}
+
+.bidding-pagination-item .MuiPaginationItem-root {
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  min-width: 40px;
+  height: 40px;
+  transition: all 0.3s ease;
+}
+
+.bidding-pagination-item .MuiPaginationItem-root.Mui-selected {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: scale(1.1);
+}
+
+.bidding-pagination-item .MuiPaginationItem-root:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .bidding-section-container {
+    padding: 16px;
+  }
+  
+  .bidding-tabs-container {
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .bidding-tab-panel {
+    padding: 16px;
+  }
+  
+  .bidding-posts-grid {
+    grid-template-columns: repeat(2, 280px);
+    gap: 16px;
+  }
+  
+  .bidding-post-card {
+    width: 280px;
+    height: 400px;
+  }
+  
+  .bidding-post-content {
+    height: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bidding-posts-grid {
+    grid-template-columns: repeat(1, 260px);
+  }
+  
+  .bidding-post-card {
+    width: 260px;
+    height: 350px;
+  }
+  
+  .bidding-post-content {
+    height: 150px;
+  }
+}

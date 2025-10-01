@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boot.sagu.mapper.CarMapperInter">
+	<insert id="insertCar" parameterType="car">
+		insert into cars(post_id,brand,model,year,mileage,fuel_type,transmission) values
+		(#{postId},#{brand},#{model},#{year},#{mileage},#{fuelType},#{transmission})
+	</insert>
+	<select id="getAllCarData" resultType="car">
+		SELECT c.*, 
+	       (SELECT photo_url FROM post_photos WHERE post_id = p.post_id AND is_main = 1 LIMIT 1) as mainPhotoUrl
+	FROM cars c 
+	ORDER BY c.car_id DESC
+	</select>
+	<select id="getOneCarData" resultType="car" parameterType="Long">
+		select * from cars where post_id=#{postId}
+	</select>
+</mapper>

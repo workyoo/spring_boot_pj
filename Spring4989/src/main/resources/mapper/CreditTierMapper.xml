@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boot.sagu.mapper.CreditTierMapper">
+    
+    <!-- 회원의 신용도 등급 정보 조회 -->
+    <select id="getCreditTierByMemberId" parameterType="int" resultType="boot.sagu.dto.CreditTierDto">
+        SELECT 
+            member_id as memberId,
+            tier,
+            total_score as totalScore,
+            transaction_score as transactionScore,
+            rating_score as ratingScore,
+            penalty_score as penaltyScore,
+            completed_transactions as completedTransactions,
+            average_rating as averageRating,
+            report_count as reportCount,
+            updated_at as updatedAt
+        FROM credit_tiers 
+        WHERE member_id = #{memberId}
+    </select>
+    
+    <!-- 회원의 완료된 거래 수 조회 (trade_reviews 기준, 거래 완료 후 후기 작성) -->
+    <select id="getCompletedTransactionCount" parameterType="int" resultType="int">
+        SELECT COUNT(*) 
+        FROM trade_reviews 
+        WHERE review_opposite_id = #{memberId}
+    </select>
+    
+    <!-- 회원의 평균 평점 조회 (1~10 스케일, NULL 값 처리) -->
+    <select id="getAverageRating" parameterType="int" resultType="java.lang.Double">
+        SELECT AVG(rating) 
+        FROM trade_reviews 
+        WHERE review_opposite_id = #{memberId}
+        AND rating IS NOT NULL
+        AND rating > 0
+    </select>
+    
+    <!-- 회원의 리뷰 개수 조회 (NULL 값 처리) -->
+    <select id="getReviewCount" parameterType="int" resultType="int">
+        SELECT COUNT(*) 
+        FROM trade_reviews 
+        WHERE review_opposite_id = #{memberId}
+        AND rating IS NOT NULL
+        AND rating > 0
+    </select>
+    
+    <!-- 회원의 신고 횟수 조회 (가중치 적용) -->
+    <select id="getWeightedReportCount" parameterType="int" resultType="int">
+        SELECT 
+            COALESCE(
+                SUM(
+                    CASE 
+                        WHEN DATEDIFF(NOW(), created_at) &lt;= 180 THEN 1.0
+                        WHEN DATEDIFF(NOW(), created_at) &lt;= 365 THEN 0.5
+                        ELSE 0.25
+                    END
+                ), 0
+            ) as weighted_count
+        FROM reports 
+        WHERE target_member_id = #{memberId} 
+        AND target_type = 'MEMBER'
+        AND status = 'RESOLVED'
+    </select>
+    
+    <!-- 회원의 티어 업데이트 -->
+    <update id="updateMemberTier">
+        UPDATE members 
+        SET tier = #{tier}, updated_at = NOW() 
+        WHERE member_id = #{memberId}
+    </update>
+    
+    <!-- 신용도 등급 정보 저장/업데이트 -->
+    <insert id="upsertCreditTier" parameterType="boot.sagu.dto.CreditTierDto">
+        INSERT INTO credit_tiers (
+            member_id, tier, total_score, transaction_score, 
+            rating_score, penalty_score, completed_transactions, 
+            average_rating, report_count, updated_at
+        ) VALUES (
+            #{memberId}, #{tier}, #{totalScore}, #{transactionScore},
+            #{ratingScore}, #{penaltyScore}, #{completedTransactions},
+            #{averageRating}, #{reportCount}, NOW()
+        ) ON DUPLICATE KEY UPDATE
+            tier = VALUES(tier),
+            total_score = VALUES(total_score),
+            transaction_score = VALUES(transaction_score),
+            rating_score = VALUES(rating_score),
+            penalty_score = VALUES(penalty_score),
+            completed_transactions = VALUES(completed_transactions),
+            average_rating = VALUES(average_rating),
+            report_count = VALUES(report_count),
+            updated_at = NOW()
+    </insert>
+    
+</mapper>

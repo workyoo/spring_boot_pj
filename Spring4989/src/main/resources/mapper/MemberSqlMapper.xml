@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="boot.sagu.mapper.MemberMapper">
+	<insert id="signup" parameterType="member">
+		INSERT INTO members (
+            login_id, 
+            password, 
+            nickname, 
+            email,
+            phone_number,
+            profile_image_url
+        ) VALUES (
+            #{loginId}, 
+            #{password}, 
+            #{nickname}, 
+            #{email},
+            #{phoneNumber},
+            #{profileImageUrl}
+        )
+	</insert>
+	<select id="findByLoginId" parameterType="String" resultType="member">
+	    SELECT 
+			member_id as memberId,
+			login_id as loginId,
+			password,
+			nickname,
+			email,
+			phone_number as phoneNumber,
+			profile_image_url as profileImageUrl,
+			tier,
+			status,
+			role,
+			created_at as createdAt,
+			updated_at as updatedAt
+	    FROM members WHERE login_id = #{loginId}
+	</select>
+	<select id="findById" parameterType="Long" resultType="member">
+	    SELECT * FROM members WHERE member_id = #{memberId}
+	</select>
+	<select id="countByLoginId" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM members WHERE login_id = #{loginId}
+	</select>
+	<select id="findByNickname" parameterType="String" resultType="member">
+	    SELECT 
+			member_id as memberId,
+			login_id as loginId,
+			password,
+			nickname,
+			email,
+			phone_number as phoneNumber,
+			profile_image_url as profileImageUrl,
+			tier,
+			status,
+			role,
+			created_at as createdAt,
+			updated_at as updatedAt
+	    FROM members WHERE nickname = #{nickname}
+	</select>
+	
+	<!-- 소셜로그인 -->
+	<select id="findByEmail" parameterType="String" resultType="member">
+	    SELECT 
+			member_id as memberId,
+			login_id as loginId,
+			password,
+			nickname,
+			email,
+			phone_number as phoneNumber,
+			profile_image_url as profileImageUrl,
+			tier,
+			status,
+			role,
+			created_at as createdAt,
+			updated_at as updatedAt
+	    FROM members WHERE email = #{email}
+	</select>
+	<select id="findByProviderAndProviderId" resultType="member">
+	    SELECT 
+			m.member_id as memberId,
+			m.login_id as loginId,
+			m.password,
+			m.nickname,
+			m.email,
+			m.phone_number as phoneNumber,
+			m.profile_image_url as profileImageUrl,
+			m.tier,
+			m.status,
+			m.role,
+			m.created_at as createdAt,
+			m.updated_at as updatedAt
+	    FROM members m
+	    JOIN social_accounts s ON m.member_id = s.member_id
+	    WHERE s.provider = #{provider} AND s.provider_id = #{providerId}
+	</select>
+	
+	<!-- 소셜로그인 추가 -->
+	<insert id="insertSocialAccount" parameterType="boot.sagu.dto.SocialAccountDto">
+	    INSERT INTO social_accounts (member_id, provider, provider_id)
+	    VALUES (#{memberId}, #{provider}, #{providerId})
+	</insert>
+	
+	<!-- 아이디 찾기 - 이메일과 전화번호로 회원 조회 -->
+	<select id="findByEmailAndPhone" resultType="member">
+		SELECT 
+			member_id as memberId,
+			login_id as loginId,
+			password,
+			nickname,
+			email,
+			phone_number as phoneNumber,
+			profile_image_url as profileImageUrl,
+			tier,
+			status,
+			role,
+			created_at as createdAt,
+			updated_at as updatedAt
+		FROM members 
+		WHERE email = #{email} AND phone_number = #{phoneNumber}
+	</select>
+	
+	<!-- 비밀번호 재설정을 위한 회원 확인 - 아이디와 전화번호로 회원 조회 -->
+	<select id="findByLoginIdAndPhone" resultType="member">
+		SELECT 
+			member_id as memberId,
+			login_id as loginId,
+			password,
+			nickname,
+			email,
+			phone_number as phoneNumber,
+			profile_image_url as profileImageUrl,
+			tier,
+			status,
+			role,
+			created_at as createdAt,
+			updated_at as updatedAt
+		FROM members 
+		WHERE login_id = #{loginId} AND phone_number = #{phoneNumber}
+	</select>
+	
+	<!-- 비밀번호 업데이트 -->
+	<update id="updatePassword">
+		UPDATE members 
+		SET password = #{password}, updated_at = CURRENT_TIMESTAMP 
+		WHERE login_id = #{loginId}
+	</update>
+	
+	<!-- 마이페이지 관련 SQL -->
+	
+	<!-- 프로필 정보 업데이트 -->
+	<update id="updateProfile" parameterType="member">
+		UPDATE members 
+		SET 
+			nickname = #{nickname},
+			email = #{email},
+			phone_number = #{phoneNumber},
+			status = #{status},
+			tier = #{tier},
+			updated_at = CURRENT_TIMESTAMP 
+		WHERE member_id = #{memberId}
+	</update>
+	
+	<!-- 프로필 이미지 업데이트 -->
+	<update id="updateProfileImage">
+		UPDATE members 
+		SET 
+			profile_image_url = #{profileImageUrl},
+			updated_at = CURRENT_TIMESTAMP 
+		WHERE login_id = #{loginId}
+	</update>
+	
+	<!-- loginId로 memberId 조회 -->
+	<select id="findMemberIdByLoginId" parameterType="String" resultType="Integer">
+		SELECT member_id FROM members WHERE login_id = #{loginId}
+	</select>
+	
+	<!-- 관리자용 SQL -->
+	
+	<!-- memberId로 회원 정보 조회 -->
+	<select id="getMemberById" parameterType="Long" resultType="member">
+		SELECT 
+			member_id as memberId,
+			login_id as loginId,
+			password,
+			nickname,
+			email,
+			phone_number as phoneNumber,
+			profile_image_url as profileImageUrl,
+			tier,
+			status,
+			role,
+			created_at as createdAt,
+			updated_at as updatedAt
+		FROM members WHERE member_id = #{memberId}
+	</select>
+	
+	<!-- 전체 회원 목록 조회 (페이징) -->
+	<select id="getAllMembersWithPaging" resultType="member">
+		SELECT 
+			member_id as memberId,
+			login_id as loginId,
+			password,
+			nickname,
+			email,
+			phone_number as phoneNumber,
+			profile_image_url as profileImageUrl,
+			tier,
+			status,
+			role,
+			created_at as createdAt,
+			updated_at as updatedAt
+		FROM members 
+		ORDER BY created_at DESC 
+		LIMIT #{size} OFFSET #{offset}
+	</select>
+	
+	<!-- 검색 조건에 따른 회원 목록 조회 (페이징) -->
+	<select id="searchMembers" resultType="member">
+		SELECT 
+			member_id as memberId,
+			login_id as loginId,
+			password,
+			nickname,
+			email,
+			phone_number as phoneNumber,
+			profile_image_url as profileImageUrl,
+			tier,
+			status,
+			role,
+			created_at as createdAt,
+			updated_at as updatedAt
+		FROM members 
+		WHERE login_id LIKE CONCAT('%', #{search}, '%')
+		   OR nickname LIKE CONCAT('%', #{search}, '%')
+		   OR email LIKE CONCAT('%', #{search}, '%')
+		ORDER BY created_at DESC 
+		LIMIT #{size} OFFSET #{offset}
+	</select>
+	
+	<!-- 전체 회원 수 -->
+	<select id="countAllMembers" resultType="int">
+		SELECT COUNT(*) FROM members
+	</select>
+	
+	<!-- 검색 조건에 따른 회원 수 -->
+	<select id="countSearchMembers" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM members 
+		WHERE login_id LIKE CONCAT('%', #{search}, '%')
+		   OR nickname LIKE CONCAT('%', #{search}, '%')
+		   OR email LIKE CONCAT('%', #{search}, '%')
+	</select>
+	
+	<!-- 모든 회원 ID 조회 (신용도 등급 관리용) -->
+	<select id="getAllMemberIds" resultType="int">
+		SELECT member_id FROM members
+	</select>
+	
+</mapper>

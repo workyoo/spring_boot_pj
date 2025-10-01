@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boot.sagu.mapper.ContactMapper">
+
+    <!-- 문의 등록 -->
+    <insert id="insertContact" parameterType="boot.sagu.dto.ContactDto" useGeneratedKeys="true" keyProperty="contactId">
+        INSERT INTO contacts (
+            name, email, subject, message, status, member_id, created_at, updated_at
+        ) VALUES (
+            #{name}, #{email}, #{subject}, #{message}, 'PENDING', #{memberId}, NOW(), NOW()
+        )
+    </insert>
+    
+    <!-- 모든 문의 조회 (관리자용) -->
+    <select id="getAllContacts" resultType="boot.sagu.dto.ContactDto">
+        SELECT 
+            contact_id as contactId,
+            name,
+            email,
+            subject,
+            message,
+            status,
+            admin_reply as adminReply,
+            member_id as memberId,
+            created_at as createdAt,
+            updated_at as updatedAt
+        FROM contacts
+        ORDER BY created_at DESC
+    </select>
+    
+    <!-- 특정 문의 조회 -->
+    <select id="getContactById" parameterType="long" resultType="boot.sagu.dto.ContactDto">
+        SELECT 
+            contact_id as contactId,
+            name,
+            email,
+            subject,
+            message,
+            status,
+            admin_reply as adminReply,
+            member_id as memberId,
+            created_at as createdAt,
+            updated_at as updatedAt
+        FROM contacts
+        WHERE contact_id = #{contactId}
+    </select>
+    
+    <!-- 문의 상태 업데이트 -->
+    <update id="updateContactStatus">
+        UPDATE contacts 
+        SET status = #{status}, updated_at = NOW()
+        WHERE contact_id = #{contactId}
+    </update>
+    
+    <!-- 관리자 답변 추가 -->
+    <update id="updateAdminReply">
+        UPDATE contacts 
+        SET admin_reply = #{adminReply}, status = 'COMPLETED', updated_at = NOW()
+        WHERE contact_id = #{contactId}
+    </update>
+    
+    <!-- 사용자별 문의 조회 -->
+    <select id="getContactsByMemberId" parameterType="long" resultType="boot.sagu.dto.ContactDto">
+        SELECT 
+            contact_id as contactId,
+            name,
+            email,
+            subject,
+            message,
+            status,
+            admin_reply as adminReply,
+            member_id as memberId,
+            created_at as createdAt,
+            updated_at as updatedAt
+        FROM contacts
+        WHERE member_id = #{memberId}
+        ORDER BY created_at DESC
+    </select>
+    
+    <!-- 문의 개수 조회 -->
+    <select id="getContactCount" resultType="int">
+        SELECT COUNT(*) FROM contacts
+    </select>
+    
+    <!-- 처리 대기 중인 문의 개수 -->
+    <select id="getPendingContactCount" resultType="int">
+        SELECT COUNT(*) FROM contacts WHERE status = 'PENDING'
+    </select>
+    
+    <!-- 문의 답변 완료된 문의 목록 조회 (알림용) -->
+    <select id="getContactNotificationsByMemberId" parameterType="long" resultType="boot.sagu.dto.ContactDto">
+        SELECT 
+            contact_id as contactId,
+            name,
+            email,
+            subject,
+            message,
+            status,
+            admin_reply as adminReply,
+            member_id as memberId,
+            created_at as createdAt,
+            updated_at as updatedAt,
+            is_read as isRead
+        FROM contacts
+        WHERE member_id = #{memberId} 
+        AND status = 'COMPLETED' 
+        AND admin_reply IS NOT NULL
+        ORDER BY updated_at DESC
+    </select>
+
+    <!-- 문의 답변 알림 읽음 처리 -->
+    <update id="markContactAsRead">
+        UPDATE contacts 
+        SET is_read = 1, updated_at = NOW()
+        WHERE contact_id = #{contactId}
+    </update>
+    
+    <select id="countContact" resultType="int">
+    	select count(*) from contacts where status='PENDING'
+    </select>
+
+</mapper>

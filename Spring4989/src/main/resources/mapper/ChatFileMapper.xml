@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boot.sagu.mapper.ChatFileMapper">
+    
+    <resultMap id="ChatFileResultMap" type="boot.sagu.dto.ChatFileDto">
+        <id column="file_id" property="fileId"/>
+        <result column="chat_room_id" property="chatRoomId"/>
+        <result column="message_id" property="messageId"/>
+        <result column="file_url" property="fileUrl"/>
+        <result column="file_size" property="fileSize"/>
+        <result column="uploaded_at" property="uploadAt"/>
+    </resultMap>
+    
+    <!-- 파일 정보 저장 -->
+    <insert id="insertChatFile" parameterType="boot.sagu.dto.ChatFileDto">
+        INSERT INTO chatfile (
+            chat_room_id,
+            message_id,
+            file_url,
+            file_size,
+            uploaded_at
+        ) VALUES (
+            #{chatRoomId},
+            #{messageId},
+            #{fileUrl},
+            #{fileSize},
+            NOW()
+        )
+    </insert>
+    
+    <!-- 메시지 ID로 파일 정보 조회 -->
+    <select id="getChatFileByMessageId" resultMap="ChatFileResultMap">
+        SELECT 
+            file_id,
+            chat_room_id,
+            message_id,
+            file_url,
+            file_size,
+            uploaded_at
+        FROM chatfile
+        WHERE message_id = #{messageId}
+    </select>
+    
+    <!-- 채팅방의 모든 파일 정보 조회 -->
+    <select id="getChatFilesByRoomId" resultMap="ChatFileResultMap">
+        SELECT 
+            file_id,
+            chat_room_id,
+            message_id,
+            file_url,
+            file_size,
+            uploaded_at
+        FROM chatfile
+        WHERE chat_room_id = #{chatRoomId}
+        ORDER BY upload_at DESC
+    </select>
+    
+    <update id="deleteFile" parameterType="Long">
+   	 update chatfile 
+		set deleted_at = now() 
+		where message_id = #{messageId}
+</update>
+
+  <delete id="deleteOldChatFiles" parameterType="int">
+        DELETE FROM chatfile
+        WHERE deleted_at IS NOT NULL
+          AND deleted_at &lt; NOW() - INTERVAL #{hours} HOUR
+    </delete>
+    
+     <select id="getOldFilePaths" parameterType="int" resultType="java.lang.String">
+        SELECT file_url FROM chatfile
+        WHERE deleted_at IS NOT NULL
+          AND deleted_at &lt; NOW() - INTERVAL #{hours} HOUR
+    </select>
+    
+</mapper> 

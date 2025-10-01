@@ -1,0 +1,93 @@
+/* 헤더 전체 스타일 */
+.MuiAppBar-root {
+  font-family: inherit !important;
+}
+
+/* 검색바 포커스 효과 */
+.MuiInputBase-root:focus-within {
+  border-color: #4A90E2 !important;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1) !important;
+}
+
+/* 버튼 호버 효과 개선 */
+.header-login-btn:hover,
+.header-signup-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+}
+
+/* 아이콘 버튼 호버 효과 */
+.MuiIconButton-root:hover {
+  background-color: #F8FAFC !important;
+  transform: scale(1.05);
+  transition: all 0.2s ease;
+}
+
+/* 배지 스타일 */
+.MuiBadge-badge {
+  font-family: inherit !important;
+  font-weight: 600 !important;
+}
+
+/* 메뉴 아이템 스타일 */
+.MuiMenuItem-root {
+  font-family: inherit !important;
+  font-size: 14px !important;
+  color: #2E3C2E !important;
+}
+
+.MuiMenuItem-root:hover {
+  background-color: #F8FAFC !important;
+  color: #4A90E2 !important;
+}
+
+/* 로고 컨테이너 스타일 */
+.header-logo-container {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 로고 이미지 스타일 */
+.header-logo-img {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  mix-blend-mode: multiply;
+  filter: contrast(1.1) brightness(1.05);
+}
+
+.header-logo-container:hover .header-logo-img {
+  transform: scale(1.02);
+  filter: contrast(1.15) brightness(1.1) drop-shadow(0 2px 8px rgba(74, 144, 226, 0.15));
+}
+
+/* 로고 텍스트 폰트 강제 적용 */
+.header-logo-container .MuiTypography-root {
+  font-family: 'Gugi', sans-serif !important;
+}
+
+/* 검색 로딩 스피너 애니메이션 */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 검색 결과 드롭다운 스타일 */
+.MuiPaper-root .MuiList-root {
+  padding: 0 !important;
+}
+
+.MuiPaper-root .MuiListItem-root {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.MuiPaper-root .MuiListItem-root:last-child {
+  border-bottom: none;
+}
+
+/* 검색 결과 호버 효과 */
+.MuiPaper-root .MuiListItemButton-root:hover {
+  background-color: #f8f9fa !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+} 

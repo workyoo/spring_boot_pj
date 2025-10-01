@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boot.sagu.mapper.ChatMessageMapper">
+    <resultMap id="ChatMessageResultMap" type="boot.sagu.dto.ChatMessageDto">
+        <id property="messageId" column="message_id"/>
+        <result property="chatRoomId" column="chat_room_id"/>
+        <result property="senderId" column="sender_id"/>
+        <result property="messageType" column="message_type"/>
+        <result property="messageContent" column="message_content"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="isRead" column="is_read"/>
+        <result property="deletedAt" column="deleted_at"/>
+    </resultMap>
+    
+    <insert id="insertMessage" parameterType="boot.sagu.dto.ChatMessageDto" useGeneratedKeys="true" keyProperty="messageId">
+    INSERT INTO chatmessage (
+        chat_room_id,
+        sender_id,
+        message_content,
+        message_type,
+        created_at
+    ) VALUES (
+        #{chatRoomId},
+        #{senderId},
+        #{messageContent},
+        #{messageType},
+        now()
+    )
+</insert>
+	
+    <select id="getAllMessages" parameterType="long" resultMap="ChatMessageResultMap" useCache="false">
+      SELECT
+      m.message_id,
+      m.chat_room_id,
+      m.sender_id,
+      m.message_type,
+      m.message_content,  -- 삭제된 메시지 처리 로직 제거
+      m.created_at,
+      m.is_read,
+      m.deleted_at  -- deleted_at 필드는 유지
+    FROM chatmessage m
+    LEFT JOIN chatfile f ON m.message_id = f.message_id
+    WHERE m.chat_room_id = #{chatRoomId}
+    ORDER BY m.created_at ASC
+    </select>
+ <update id="markMessagesAsRead">
+    UPDATE chatmessage
+    SET is_read = 1
+    WHERE chat_room_id = #{chatRoomId}
+      AND sender_id != #{memberId}
+      AND is_read = 0
+</update>
+    
+    <insert id="insertSystemMessage" parameterType="boot.sagu.dto.ChatMessageDto">
+    INSERT INTO chatmessage (chat_room_id, sender_id, message_type, message_content, created_at)
+    VALUES (#{chatRoomId}, #{senderId},'SYSTEM', #{messageContent}, NOW())
+</insert>
+
+<update id="deleteMessage" parameterType="Long">
+	update chatmessage set deleted_at=now()	where message_id=#{messageId}
+</update>
+
+<select id="getChatRoomIdByMessageId" parameterType="Long" resultType="Long">
+	SELECT chat_room_id FROM chatmessage WHERE message_id = #{messageId}
+</select>
+
+    
+    <update id="updateAllMessagesDeletedAt" parameterType="long">
+        UPDATE chatmessage
+        SET deleted_at = now()
+        WHERE chat_room_id = #{chatRoomId}
+    </update>
+    
+    <delete id="deleteOldMessages" parameterType="int">
+    DELETE FROM chatmessage
+    WHERE deleted_at IS NOT NULL
+    AND deleted_at &lt; NOW() - INTERVAL #{hours} HOUR
+</delete>
+
+<select id="getUnreadMessageCount" parameterType="Long" resultType="int">
+        SELECT COUNT(cm.message_id)
+        FROM chatmessage cm
+        INNER JOIN chatroom cr ON cm.chat_room_id = cr.chat_room_id
+        WHERE cm.is_read = 0
+          AND cm.sender_id != #{memberId}
+          AND (cr.seller_id = #{memberId} OR cr.buyer_id = #{memberId})
+    </select>
+    
+    <insert id="insertFirstChatMessage" parameterType="java.util.Map">
+    INSERT INTO chatmessage (chat_room_id, sender_id, message_type, message_content)
+    VALUES (#{chatRoomId}, #{senderId}, #{messageType}, #{messageContent})
+</insert>
+
+<select id="getUnreadMessageCountByChatRoom" parameterType="java.util.Map" resultType="int">
+        SELECT COUNT(message_id)
+        FROM chatmessage
+        WHERE chat_room_id = #{chatRoomId}
+          AND sender_id != #{memberId}
+          AND is_read = 0
+    </select>
+    
+</mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boot.sagu.mapper.EscrowMapper">
+
+<insert id="insertEscrowOrder" parameterType="Escrow">
+  INSERT INTO escrow_orders (post_id, buyer_id, amount, merchant_uid, status, created_at)
+  VALUES (#{postId}, #{buyerId}, #{amount}, #{merchantUid}, #{status}, NOW())
+</insert>
+
+<update id="markPaidByMerchantUid">
+  UPDATE escrow_orders
+     SET status='PAID', imp_uid=#{impUid}, updated_at=NOW()
+   WHERE merchant_uid=#{merchantUid}
+</update>
+
+<select id="findByPostAndBuyer" resultType="Escrow">
+  SELECT id, post_id, buyer_id, merchant_uid, amount, status
+  FROM escrow_orders
+  WHERE post_id = #{postId}
+    AND buyer_id = #{memberId}
+  ORDER BY id DESC
+  LIMIT 1
+</select>
+
+</mapper>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boot.sagu.mapper.ReviewMapperInter">
+    
+    <!-- 후기 작성 -->
+    <insert id="insertReview" parameterType="boot.sagu.dto.ReviewDto">
+        INSERT INTO trade_reviews (
+            post_id, 
+            reviewer_id, 
+            review_opposite_id, 
+            rating, 
+            comment, 
+            created_at
+        ) VALUES (
+            #{postId}, 
+            #{reviewerId}, 
+            #{reviewOppositeId}, 
+            #{rating}, 
+            #{comment}, 
+            NOW()
+        )
+    </insert>
+    
+    <!-- 후기 존재 여부 확인 -->
+    <select id="checkReviewExists" resultType="int">
+        SELECT COUNT(*)
+        FROM trade_reviews
+        WHERE post_id = #{postId}
+        AND reviewer_id = #{reviewerId}
+        AND review_opposite_id = #{reviewOppositeId}
+    </select>
+    
+</mapper>

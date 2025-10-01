@@ -1,0 +1,284 @@
+/* PortOnePayment.css */
+.payment-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.payment-card {
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  padding: 40px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.payment-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+/* Header */
+.payment-header {
+  margin-bottom: 32px;
+}
+
+.payment-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.payment-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.payment-subtitle {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Payment Details */
+.payment-details {
+  margin-bottom: 32px;
+}
+
+.payment-amount {
+  background: linear-gradient(135deg, #f7fafc, #edf2f7);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 2px solid #e2e8f0;
+}
+
+.amount-label {
+  display: block;
+  font-size: 14px;
+  color: #718096;
+  font-weight: 500;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.amount-value {
+  display: block;
+  font-size: 32px;
+  font-weight: 800;
+  color: #2d3748;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.payment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.info-label {
+  font-size: 14px;
+  color: #718096;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+/* Loading */
+.payment-loading {
+  margin-bottom: 32px;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+  height: 60px;
+}
+
+.spinner-ring {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 3px solid transparent;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-ring:nth-child(2) {
+  width: 30px;
+  height: 30px;
+  border-top-color: #764ba2;
+  animation-delay: -0.3s;
+}
+
+.spinner-ring:nth-child(3) {
+  width: 20px;
+  height: 20px;
+  border-top-color: #a0aec0;
+  animation-delay: -0.6s;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 12px 0;
+}
+
+.loading-hint {
+  font-size: 14px;
+  color: #718096;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Footer */
+.payment-footer {
+  display: flex;
+  justify-content: center;
+}
+
+.security-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  color: white;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+.security-icon {
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .payment-container {
+    padding: 16px;
+  }
+  
+  .payment-card {
+    padding: 24px;
+    border-radius: 20px;
+  }
+  
+  .payment-title {
+    font-size: 24px;
+  }
+  
+  .amount-value {
+    font-size: 28px;
+  }
+  
+  .payment-amount {
+    padding: 20px;
+  }
+  
+  .info-item {
+    padding: 14px 16px;
+  }
+}
+
+/* Hover Effects */
+.payment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.info-item:hover {
+  background: #edf2f7;
+  transform: translateX(2px);
+  transition: all 0.2s ease;
+}
+
+/* Focus States */
+.payment-card:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1), 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+/* Animation for card entrance */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.payment-card {
+  animation: slideInUp 0.4s ease-out;
+}
+
+/* Pulse animation for security badge */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.security-badge {
+  animation: pulse 2s infinite;
+}

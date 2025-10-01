@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boot.sagu.mapper.PhotoMapperInter">
+	<insert id="insertPhoto" parameterType="List">
+		insert into post_photos(post_id,photo_url,is_main) values
+		<foreach collection="list" item="photo" separator=",">
+        (#{photo.postId},#{photo.photoUrl},#{photo.isMain})
+    	</foreach>
+</insert>
+<select id="getPhotosByPostId" parameterType="long" resultType="photo">
+    SELECT photo_id, post_id, photo_url, is_main
+    FROM post_photos
+    WHERE post_id = #{postId}
+</select>
+
+<!-- 여러 장 삭제 -->
+  <delete id="deletePhotosByIds" parameterType="list">
+    DELETE FROM post_photos
+    WHERE photo_id IN
+    <foreach collection="list" item="id" open="(" separator="," close=")">
+      #{id}
+    </foreach>
+  </delete>
+
+  <!-- 대표사진 없으면 하나 지정 -->
+  <update id="ensureOneMainPhoto" parameterType="long">
+  UPDATE post_photos
+  SET is_main = 1
+  WHERE photo_id = (
+    SELECT pid FROM (
+      SELECT MIN(photo_id) AS pid
+      FROM post_photos
+      WHERE post_id = #{postId}
+    ) AS t
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM (
+      SELECT 1
+      FROM post_photos
+      WHERE post_id = #{postId} AND is_main = 1
+      LIMIT 1
+    ) AS x
+  )
+</update>
+
+
+  <!-- (선택) 대표 직접 지정 흐름용 -->
+  <update id="clearMainFlags" parameterType="long">
+    UPDATE post_photos SET is_main = 0 WHERE post_id = #{postId}
+  </update>
+
+  <update id="setMainPhoto">
+    UPDATE post_photos SET is_main = 1 WHERE photo_id = #{photoId}
+  </update>
+  
+  <!--파일삭제-->
+  <select id="findPhotoUrlsByIds" parameterType="list" resultType="string">
+  SELECT photo_url FROM post_photos
+  WHERE photo_id IN
+  <foreach collection="list" item="id" open="(" separator="," close=")">
+    #{id}
+  </foreach>
+</select>
+
+
+</mapper>

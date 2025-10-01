@@ -1,0 +1,347 @@
+/* 로그인 컨테이너 */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: linear-gradient(135deg, #E3F2FD 0%, #F4F1EB 100%);
+  padding: 80px 20px 40px 20px;
+  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+}
+
+/* 로그인 카드 */
+.login-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border-radius: 24px !important;
+  padding: 40px 40px 32px 40px !important;
+  width: 100% !important;
+  max-width: 500px !important;
+  min-width: 500px !important;
+  box-shadow: 0 20px 60px rgba(74, 144, 226, 0.15) !important;
+  border: 1px solid rgba(74, 144, 226, 0.1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  margin-bottom: 0 !important;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #4A90E2 0%, #5B9BD5 50%, #4A90E2 100%);
+}
+
+/* 로그인 헤더 */
+.login-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #2E3C2E 0%, #4F684E 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.login-subtitle {
+  color: #5B9BD5;
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+/* 폼 그룹 */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  color: #2E3C2E;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+/* 입력 필드 래퍼 */
+.input-wrapper {
+  position: relative;
+}
+
+.form-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid rgba(74, 144, 226, 0.2);
+  border-radius: 12px;
+  font-size: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  color: #2E3C2E;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.form-input::placeholder {
+  color: #9CA3AF;
+  opacity: 0.7;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #4A90E2;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+  transform: translateY(-1px);
+}
+
+.form-input:hover {
+  border-color: rgba(74, 144, 226, 0.4);
+}
+
+/* 로그인 버튼 */
+.login-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #4A90E2 0%, #5B9BD5 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #5B9BD5 0%, #4A90E2 100%);
+  transition: all 0.3s ease;
+  z-index: -1;
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(74, 144, 226, 0.3);
+}
+
+.login-btn:hover::before {
+  left: 0;
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+/* 구분선 */
+.divider {
+  text-align: center;
+  margin: 24px 0;
+  position: relative;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(74, 144, 226, 0.2);
+}
+
+.divider span {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0 16px;
+  color: #5B9BD5;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* 소셜 로그인 */
+.social-login {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border: 1px solid #DADCE0;
+  border-radius: 4px;
+  background: #FFFFFF;
+  color: #3C4043;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Roboto', sans-serif;
+  position: relative;
+  overflow: hidden;
+  min-height: 44px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.social-btn:hover {
+  background: #F8F9FA;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.social-btn:active {
+  background: #F1F3F4;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
+}
+
+.social-icon {
+  flex-shrink: 0;
+}
+
+/* 카카오 버튼 특별 스타일 - 카카오 공식 가이드라인 */
+.kakao-btn {
+  background: #FEE500;
+  border-color: #FEE500;
+  color: #000000;
+  font-weight: 600;
+}
+
+.kakao-btn:hover {
+  background: #FDD800;
+  border-color: #FDD800;
+  box-shadow: 0 2px 6px rgba(254, 229, 0, 0.3);
+}
+
+.kakao-btn:active {
+  background: #FCC800;
+  border-color: #FCC800;
+}
+
+/* 구글 버튼 특별 스타일 - 구글 공식 가이드라인 */
+.google-btn {
+  background: #FFFFFF;
+  border-color: #DADCE0;
+  color: #3C4043;
+  font-weight: 500;
+}
+
+.google-btn:hover {
+  background: #F8F9FA;
+  border-color: #DADCE0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.google-btn:active {
+  background: #F1F3F4;
+  border-color: #DADCE0;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 60px 20px 30px 20px;
+  }
+  
+  .login-card {
+    padding: 32px 24px;
+    margin: 20px;
+    max-width: 100%;
+    min-width: 320px;
+  }
+  
+  .login-title {
+    font-size: 1.8rem;
+  }
+  
+  .form-input {
+    padding: 14px 16px;
+  }
+  
+  .login-btn {
+    padding: 14px;
+    margin-bottom: 20px;
+  }
+  
+  .divider {
+    margin: 20px 0;
+  }
+  
+  .social-login {
+    gap: 12px;
+  }
+  
+  .social-btn {
+    padding: 12px 18px;
+    min-height: 42px;
+  }
+}
+
+/* 애니메이션 효과 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* 포커스 표시 개선 */
+.form-input:focus-visible {
+  outline: none;
+}
+
+/* 다크모드 지원 */
+@media (prefers-color-scheme: dark) {
+  .login-card {
+    background: rgba(30, 30, 30, 0.95);
+    border-color: rgba(74, 144, 226, 0.2);
+  }
+  
+  .form-label {
+    color: #E5E7EB;
+  }
+  
+  .form-input {
+    background: rgba(30, 30, 30, 0.9);
+    color: #E5E7EB;
+    border-color: rgba(74, 144, 226, 0.3);
+  }
+  
+  .form-input:focus {
+    background: rgba(40, 40, 40, 0.95);
+  }
+  
+  .social-btn {
+    background: rgba(30, 30, 30, 0.8);
+    color: #E5E7EB;
+  }
+}

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boot.sagu.mapper.AdminMapperInter">
+
+    <!-- 관리자 작업 로그 저장 -->
+    <insert id="insertActionLog" parameterType="boot.sagu.dto.AdminActionLogDto">
+        INSERT INTO admin_action_logs (
+            admin_id,
+            action_type,
+            target_entity_type,
+            target_entity_id,
+            details,
+            ip_address,
+            created_at
+        ) VALUES (
+            #{adminId},
+            #{actionType},
+            #{targetEntityType},
+            #{targetEntityId},
+            #{details},
+            #{ipAddress},
+            #{createdAt}
+        )
+    </insert>
+
+    <!-- 관리자 작업 로그 조회 (페이징) -->
+    <select id="getActionLogsWithPaging" resultType="boot.sagu.dto.AdminActionLogDto">
+        SELECT 
+            log_id as logId,
+            admin_id as adminId,
+            action_type as actionType,
+            target_entity_type as targetEntityType,
+            target_entity_id as targetEntityId,
+            details,
+            ip_address as ipAddress,
+            created_at as createdAt
+        FROM admin_action_logs
+        ORDER BY created_at DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 관리자 작업 로그 총 개수 -->
+    <select id="countActionLogs" resultType="int">
+        SELECT COUNT(*) FROM admin_action_logs
+    </select>
+
+</mapper>

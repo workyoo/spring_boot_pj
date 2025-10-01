@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boot.sagu.mapper.ChatMapper">
+	
+	<resultMap id="ChatResultMap" type="chat">
+    <id column="chat_room_id" property="chatRoomId"/>
+    <result column="product_id" property="productId"/>
+    <result column="seller_id" property="sellerId"/>
+    <result column="buyer_id" property="buyerId"/>
+    <result column="created_at" property="createdAt"/>
+    <result column="last_message_at" property="lastMessageAt"/>
+    <result column="deleted_at" property="deletedAt"/>
+    <result column="opponent_nickname" property="opponentNickname"/>
+    <result column="buyer_exit_status" property="buyerExitStatus"/>
+    <result column="seller_exit_status" property="sellerExitStatus"/>
+</resultMap>
+	<select id="getAllChat" resultMap="ChatResultMap">
+    SELECT 
+        c.chat_room_id,
+        c.product_id,
+        c.seller_id,
+        c.buyer_id,
+        c.created_at,
+        c.last_message_at,
+        CASE 
+            WHEN c.seller_id = #{loginId} THEN m2.nickname
+            WHEN c.buyer_id = #{loginId} THEN m1.nickname
+        END as opponent_nickname
+    FROM chatroom c
+    LEFT JOIN members m1 ON c.seller_id = m1.member_id
+    LEFT JOIN members m2 ON c.buyer_id = m2.member_id
+    WHERE (c.buyer_id = #{loginId} AND c.buyer_exit_status = 0)
+       OR (c.seller_id = #{loginId} AND c.seller_exit_status = 0)
+    ORDER BY c.last_message_at DESC
+</select>
+	
+	<select id="getChatRoomsWithLastMessage" resultType="java.util.Map">
+    SELECT 
+        cr.chat_room_id as chatRoomId,
+        cr.seller_id as sellerId,
+        cr.buyer_id as buyerId,
+        CASE 
+            WHEN cr.seller_id = #{memberId} THEN buyer.nickname
+            WHEN cr.buyer_id = #{memberId} THEN seller.nickname
+        END as otherUserNickname,
+        CASE 
+            WHEN cr.seller_id = #{memberId} THEN buyer.profile_image_url
+            WHEN cr.buyer_id = #{memberId} THEN seller.profile_image_url
+        END as otherUserProfileImage,
+        lastMsg.message_content as lastMessage,
+        lastMsg.message_type as lastMessageType,
+        lastMsg.created_at as lastMessageTime,
+        COALESCE(unread.unreadCount, 0) as unreadCount,
+        p.title as postTitle,
+        p.price as postPrice,
+        cr.product_id as productId
+    FROM chatroom cr
+    LEFT JOIN members seller ON cr.seller_id = seller.member_id
+    LEFT JOIN members buyer ON cr.buyer_id = buyer.member_id
+    LEFT JOIN posts p ON cr.product_id = p.post_id
+    -- 마지막 메시지 가져오기 (윈도우 함수 사용)
+    LEFT JOIN (
+        SELECT 
+            chat_room_id,
+            message_content,
+            message_type,
+            created_at,
+            ROW_NUMBER() OVER(PARTITION BY chat_room_id ORDER BY created_at DESC) as rn
+        FROM chatmessage
+    ) lastMsg ON cr.chat_room_id = lastMsg.chat_room_id AND lastMsg.rn = 1
+    -- 읽지 않은 메시지 카운트
+    LEFT JOIN (
+        SELECT 
+            chat_room_id,
+            COUNT(*) AS unreadCount
+        FROM chatmessage
+        WHERE sender_id != #{memberId}
+          AND is_read = 0
+        GROUP BY chat_room_id
+    ) unread ON cr.chat_room_id = unread.chat_room_id
+    WHERE (cr.buyer_id = #{memberId} AND cr.buyer_exit_status = 0)
+       OR (cr.seller_id = #{memberId} AND cr.seller_exit_status = 0)
+    ORDER BY lastMessageTime DESC
+</select>
+
+<select id="getOtherUserInChatRoom" resultType="java.util.Map">
+    SELECT 
+        CASE 
+            WHEN cr.seller_id = #{currentMemberId} THEN cr.buyer_id
+            WHEN cr.buyer_id = #{currentMemberId} THEN cr.seller_id
+        END as memberId,
+        m.nickname,
+        m.profile_image_url as profileImage
+    FROM chatroom cr
+    JOIN members m ON (
+        CASE 
+            WHEN cr.seller_id = #{currentMemberId} THEN cr.buyer_id
+            WHEN cr.buyer_id = #{currentMemberId} THEN cr.seller_id
+        END = m.member_id
+    )
+    WHERE cr.chat_room_id = #{chatRoomId}
+</select>
+
+<update id="updateExitStatus">
+    UPDATE chatroom
+    SET
+        buyer_exit_status = CASE WHEN buyer_id = #{memberId} THEN 1 ELSE buyer_exit_status END,
+        seller_exit_status = CASE WHEN seller_id = #{memberId} THEN 1 ELSE seller_exit_status END,
+        deleted_at = CASE 
+            WHEN (buyer_id = #{memberId} AND seller_exit_status = 1) 
+                 OR (seller_id = #{memberId} AND buyer_exit_status = 1)
+            THEN NOW()
+            ELSE deleted_at
+        END
+    WHERE chat_room_id = #{chatRoomId}
+</update>
+
+<select id="getChatroomExitStatus" parameterType="Long" resultType="Map">
+	SELECT buyer_exit_status, seller_exit_status FROM chatroom WHERE chat_room_id = #{chatRoomId}
+</select>
+
+<select id="getChatRoomInfoById" resultType="map">
+    SELECT buyer_id,seller_id FROM chatroom WHERE chat_room_id = #{chatRoomId}
+</select>
+
+<select id="getMemberNickname" resultType="String">
+    SELECT nickname FROM members WHERE member_id = #{memberId}
+</select>
+
+ <delete id="deleteOldChatRooms" parameterType="int">
+        DELETE FROM chatroom
+        WHERE deleted_at IS NOT NULL
+          AND deleted_at &lt; NOW() - INTERVAL #{hours} HOUR
+    </delete>
+    
+      <!-- 특정 채팅방의 seller_id와 buyer_id를 가져오는 쿼리 -->
+    <select id="getSellerAndBuyerIds" parameterType="Long" resultType="map">
+        SELECT seller_id, buyer_id
+        FROM chatroom
+        WHERE chat_room_id = #{chatRoomId}
+    </select>
+    
+ <insert id="insertChatroom" parameterType="boot.sagu.dto.ChatDto" useGeneratedKeys="true" keyProperty="chatRoomId">
+    INSERT INTO chatroom (product_id, seller_id, buyer_id)
+    VALUES (#{productId}, #{sellerId}, #{buyerId})
+</insert>
+
+<select id="findChatroomByProductIdAndBuyerId" resultType="java.lang.Long">
+    SELECT chat_room_id FROM chatroom WHERE product_id = #{productId} AND buyer_id = #{buyerId}
+</select>
+
+<select id="getChatRoomById" resultType="java.util.Map">
+    SELECT 
+        cr.chat_room_id as chatRoomId,
+        cr.product_id as productId,
+        cr.seller_id as sellerId,
+        cr.buyer_id as buyerId,
+        seller.nickname as sellerNickname,
+        buyer.nickname as buyerNickname,
+        seller.profile_image_url as sellerProfileImage,
+        buyer.profile_image_url as buyerProfileImage,
+        lastMsg.message_content as lastMessage,
+        lastMsg.message_type as lastMessageType,
+        lastMsg.created_at as lastMessageTime,
+        COALESCE(unread.unreadCount, 0) as unreadCount,
+        p.title as postTitle,
+        p.price as postPrice
+    FROM chatroom cr
+    LEFT JOIN members seller ON cr.seller_id = seller.member_id
+    LEFT JOIN members buyer ON cr.buyer_id = buyer.member_id
+    LEFT JOIN posts p ON cr.product_id = p.post_id
+
+    LEFT JOIN (
+        SELECT 
+            chat_room_id,
+            message_content,
+            message_type,
+            created_at,
+            ROW_NUMBER() OVER(PARTITION BY chat_room_id ORDER BY created_at DESC) as rn
+        FROM chatmessage
+    ) lastMsg ON cr.chat_room_id = lastMsg.chat_room_id AND lastMsg.rn = 1
+    
+    LEFT JOIN (
+        SELECT 
+            chat_room_id,
+            COUNT(*) AS unreadCount
+        FROM chatmessage
+        WHERE sender_id != #{memberId}
+          AND is_read = 0
+        GROUP BY chat_room_id
+    ) unread ON cr.chat_room_id = unread.chat_room_id
+    
+    WHERE cr.chat_room_id = #{chatRoomId}
+</select>
+
+<select id="countChat" resultType="int">
+	select count(*) from chatroom where buyer_exit_status=0 and seller_exit_status=0
+</select>
+
+</mapper>

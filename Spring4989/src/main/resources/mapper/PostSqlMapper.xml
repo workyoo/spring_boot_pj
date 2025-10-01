@@ -1,0 +1,800 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="boot.sagu.mapper.PostsMapperInter">
+   <insert id="insertPost" parameterType="posts"
+      useGeneratedKeys="true" keyProperty="postId">
+      INSERT INTO
+      posts(member_id,title,price,trade_type,auction_end_time,created_at,post_type,content,buyer_id,location,detail_location,latitude,longitude)
+      VALUES(#{memberId},#{title},#{price},#{tradeType},
+      CASE
+      WHEN
+      #{tradeType} = 'AUCTION'
+      THEN DATE_ADD(CONVERT_TZ(NOW(), 'UTC','Asia/Seoul'), INTERVAL 24 HOUR)
+      ELSE NULL END, CONVERT_TZ(NOW(),'UTC','Asia/Seoul'),#{postType},#{content},null,#{location},#{detail_location},#{latitude},#{longitude})
+   </insert>
+
+   <!-- 상세리스트 -->
+   <select id="getPostData" resultType="map" parameterType="long">
+      SELECT
+      p.post_id AS postId,
+      p.member_id AS memberId,
+      p.title AS title,
+      p.content AS content,
+      p.price AS price,
+      p.trade_type AS tradeType,
+      p.status AS status,
+      p.view_count AS viewCount,
+      p.created_at AS createdAt,
+      p.buyer_id AS buyerId,
+      p.updated_at AS UpdatedAt,
+      p.post_type AS postType,
+      p.location AS location,
+      p.detail_location AS detailLocation,
+      p.latitude AS latitude,
+      p.longitude AS longitude,
+      m.nickname AS nickname,
+      m.member_id AS memberId,
+      -- 아이템 정보 (카테고리 포함)
+      ui.post_id AS itemPostId,
+      ui.category_id AS itemCategoryId,
+      ui.conditions AS itemConditions,
+      -- 카테고리 정보
+      c.category_id AS categoryId,
+      c.name AS categoryName,
+      c.parent_id AS categoryParentId,
+      -- 부모 카테고리 정보
+      pc.category_id AS parentCategoryId,
+      pc.name AS parentCategoryName,
+      COALESCE(
+      JSON_ARRAYAGG(
+      JSON_OBJECT(
+      'photoId', pp.photo_id,
+      'photoUrl',
+      pp.photo_url,
+      'isMain', pp.is_main
+      )
+      ),
+      JSON_ARRAY()
+      ) AS photos
+      FROM posts p
+      LEFT JOIN members m ON m.member_id = p.member_id
+      LEFT JOIN post_photos pp ON pp.post_id = p.post_id
+      LEFT JOIN used_items ui ON ui.post_id = p.post_id
+      LEFT JOIN categories c ON c.category_id = ui.category_id
+      LEFT JOIN categories pc ON pc.category_id = c.parent_id
+      WHERE p.post_id = #{postId}
+      GROUP BY p.post_id, p.member_id, p.title, p.content, p.price, p.trade_type, p.status, p.view_count, p.created_at, p.buyer_id, p.updated_at, p.post_type, p.location, p.detail_location, p.latitude, p.longitude, m.nickname, m.member_id, ui.post_id, ui.category_id, ui.conditions, c.category_id, c.name, c.parent_id, pc.category_id, pc.name
+   </select>
+
+   <!-- 전체리스트 -->
+   <select id="getPostListWithNick" resultType="map">
+      SELECT
+      p.post_id AS postId,
+      p.member_id AS memberId,
+      p.title AS title,
+      p.price AS price,
+      p.post_type AS postType,
+      p.trade_type AS tradeType,
+      p.created_at AS createdAt,
+      p.view_count AS viewCount,
+      p.status AS status,
+      COALESCE(pp.photo_url, '') AS mainPhotoUrl,
+      pp.is_main AS is_main,
+      m.nickname AS nickname
+      FROM posts p
+      LEFT JOIN members m ON m.member_id = p.member_id
+      LEFT JOIN post_photos pp ON p.post_id = pp.post_id AND pp.is_main = 1
+      ORDER BY p.post_id DESC
+   </select>
+
+   <!-- 조회수 -->
+   <update id="increaseViewCount" parameterType="long">
+      UPDATE posts
+      SET
+      view_count = view_count + 1
+      WHERE post_id = #{postId}
+   </update>
+
+
+   <!-- 찜 추가 -->
+   <insert id="insertFavorite">
+      INSERT INTO favorites (
+      member_id,
+      post_id,
+      created_at
+      )
+      VALUES (
+      #{memberId},
+      #{postId},
+      CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')
+      )
+   </insert>
+
+   <!-- 찜 삭제 -->
+   <delete id="deleteFavorite">
+      DELETE FROM favorites
+      WHERE post_id = #{postId} AND
+      member_id = #{memberId}
+   </delete>
+
+   <!-- 찜 개수 조회 -->
+   <select id="countFavorite" parameterType="long">
+      SELECT COUNT(*)
+      FROM
+      favorites
+      WHERE post_id = #{postId}
+   </select>
+
+   <!-- 나의 찜 상태 확인 -->
+   <select id="existsFavorite" parameterType="map">
+      SELECT COUNT(*) FROM
+      favorites
+      WHERE post_id = #{postId}
+      AND member_id = #{memberId}
+   </select>
+
+   <!-- 수정 -->
+   <!-- 게시글 공통 수정 -->
+
+   <update id="updatePost" parameterType="posts">
+      UPDATE posts
+      <set>
+         <if test="title != null">title = #{title},</if>
+         <if test="price != null">price = #{price},</if>
+         <if test="content != null">content = #{content},</if>
+         <if test="tradeType != null">trade_type = #{tradeType},</if>
+         <if test="status != null">status = #{status},</if>
+         <if test="postType != null">post_type = #{postType},</if>
+         updated_at = CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')
+      </set>
+      WHERE post_id = #{postId}
+   </update>
+
+
+   <!-- 자동차 수정 -->
+   <update id="updateCar" parameterType="car">
+      UPDATE cars
+      <set>
+         <if test="brand != null">brand = #{brand},</if>
+         <if test="model != null">model = #{model},</if>
+         <if test="year != null">year = #{year},</if>
+         <if test="mileage != null">mileage = #{mileage},</if>
+         <if test="fuelType != null">fuel_type = #{fuelType},</if>
+         <if test="transmission != null">transmission = #{transmission},</if>
+      </set>
+      WHERE post_id = #{postId}
+   </update>
+
+   <!-- 부동산 수정 -->
+   <update id="updateRealEstate" parameterType="estate">
+      UPDATE real_estates
+      <set>
+         <if test="propertyType != null">property_type = #{propertyType},</if>
+         <if test="area != null">area = #{area},</if>
+         <if test="rooms != null">rooms = #{rooms},</if>
+         <if test="floor != null">floor = #{floor},</if>
+         <if test="dealType != null">deal_type = #{dealType},</if>
+      </set>
+      WHERE post_id = #{postId}
+   </update>
+
+   <!-- 중고물품(아이템) 수정 -->
+   <update id="updateItem" parameterType="item">
+      UPDATE used_items
+      <set>
+         <if test="categoryId != null">category_id = #{categoryId},</if>
+         <if test="conditions != null">conditions = #{conditions},</if>
+      </set>
+      WHERE post_id = #{postId}
+   </update>
+
+
+   <!-- 경매 종료시간 24시간 뒤로 -->
+   <update id="updateAuctionEndTimeToNowPlus24H"
+      parameterType="long">
+      UPDATE posts
+      SET auction_end_time =
+      DATE_ADD(CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'),
+      INTERVAL 24 HOUR)
+      WHERE post_id = #{postId}
+   </update>
+
+   <!--권한 확인 -->
+   <select id="findPostOwnerId" parameterType="long" resultType="long">
+      SELECT
+      member_id
+      FROM posts
+      WHERE post_id = #{postId}
+   </select>
+
+   <!--삭제 -->
+   <delete id="deletePost" parameterType="long">
+      DELETE FROM posts
+      WHERE post_id = #{postId}
+   </delete>
+   
+   <!-- 어드민 권한으로 게시글 삭제 (memberId=1인 경우 모든 게시글 삭제 가능) -->
+   <delete id="deletePostByAdmin">
+      DELETE FROM posts
+      WHERE post_id = #{postId}
+      AND EXISTS (
+         SELECT 1 FROM members 
+         WHERE member_id = #{adminId} 
+         AND member_id = 1
+      )
+   </delete>
+
+
+   <!-- 신고 -->
+   <insert id="insertReport" parameterType="report">
+      INSERT INTO reports
+      (reporter_id, target_type, target_post_id, target_member_id, reason,
+      status, created_at)
+      VALUES
+      (#{reporterId},
+      #{targetType},
+      #{targetPostId},
+      #{targetMemberId},
+      #{reason},
+      #{status},
+      CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul'))
+   </insert>
+
+<!-- 신고 목록 + 신고자 닉네임 + 대상 정보 -->
+<select id="getAllReports" resultType="map">
+    SELECT 
+        r.report_id       AS reportId,
+        r.target_type     AS targetType,
+        r.target_post_id  AS targetPostId,
+        r.target_member_id AS targetMemberId,
+        r.reason          AS reason,
+        r.status          AS status,
+        r.created_at      AS createdAt,
+        r.reporter_id     AS reporterId,
+        reporter.nickname AS reporterNickname,
+        
+        -- 대상 정보 (게시글 제목 + 작성자 or 회원 닉네임)
+        CASE 
+            WHEN r.target_type = 'POST' 
+                THEN CONCAT(
+                    COALESCE(p.title, '삭제된 게시글'),
+                    ' (작성자: ',
+                    COALESCE(post_author.nickname, '알 수 없음'),
+                    ')'
+                )
+            WHEN r.target_type = 'MEMBER' 
+                THEN COALESCE(target_member.nickname, '탈퇴한 사용자')
+            ELSE '알 수 없음'
+        END AS targetInfo,
+        
+        -- 게시글 작성자 닉네임 (별도 필드)
+        CASE 
+            WHEN r.target_type = 'POST' 
+                THEN COALESCE(post_author.nickname, '알 수 없음')
+            ELSE NULL
+        END AS postAuthorNickname
+        
+    FROM reports r
+    LEFT JOIN members reporter 
+           ON r.reporter_id = reporter.member_id
+    LEFT JOIN posts p 
+           ON r.target_type = 'POST' 
+          AND r.target_post_id = p.post_id
+    LEFT JOIN members post_author 
+           ON r.target_type = 'POST' 
+          AND p.member_id = post_author.member_id
+    LEFT JOIN members target_member 
+           ON r.target_type = 'MEMBER' 
+          AND r.target_member_id = target_member.member_id
+    ORDER BY r.created_at DESC
+</select>
+
+
+
+   <!-- 신고 상태 업데이트 -->
+   <update id="updateReportStatus">
+      UPDATE reports 
+      SET status = #{status}
+      WHERE report_id = #{reportId}
+   </update>
+
+   <!-- 검색 -->
+
+	<!-- 검색 기능 -->
+	<resultMap id="PostsWithDetailsMap" type="boot.sagu.dto.PostsDto">
+		<!-- 공통 필드 -->
+		<id property="postId" column="post_id" />
+		<result property="memberId" column="member_id" />
+		<result property="postType" column="post_type" />
+		<result property="title" column="title" />
+		<result property="price" column="price" />
+		<result property="tradeType" column="trade_type" />
+		<result property="content" column="content" />
+		<result property="status" column="status" />
+		<result property="createdAt" column="created_at" />
+		<result property="viewCount" column="view_count" />
+		<result property="mainPhotoUrl" column="mainPhotoUrl" />
+		<result property="nickname" column="nickname" />
+
+		<!-- 자동차 정보 -->
+		<association property="car" javaType="boot.sagu.dto.CarDto" columnPrefix="c_">
+			<id property="postId" column="post_id" />
+			<result property="brand" column="brand" />
+			<result property="model" column="model" />
+			<result property="year" column="year" />
+			<result property="mileage" column="mileage" />
+			<result property="fuelType" column="fuel_type" />
+			<result property="transmission" column="transmission" />
+		</association>
+
+		<!-- 부동산 정보 -->
+		<association property="estate" javaType="boot.sagu.dto.RealEstateDto" columnPrefix="re_">
+			<id property="postId" column="post_id" />
+			<result property="propertyType" column="property_type" />
+			<result property="area" column="area" />
+			<result property="rooms" column="rooms" />
+			<result property="floor" column="floor" />
+			<result property="dealType" column="deal_type" />
+		</association>
+
+		<!-- 중고물품 정보 -->
+		<association property="item" javaType="boot.sagu.dto.ItemDto" columnPrefix="ui_">
+			<id property="postId" column="post_id" />
+			<result property="categoryId" column="category_id" />
+			<result property="conditions" column="conditions" />
+			<result property="categoryName" column="category_name" />
+		</association>
+	</resultMap>
+
+	<!-- 통합 검색 쿼리 -->
+	<select id="searchAll" resultMap="PostsWithDetailsMap">
+		<bind name="kw" value="keyword != null ? keyword.trim() : ''" />
+
+  SELECT 
+      -- posts 테이블 (공통)
+      p.post_id,
+      p.post_type,
+      p.title,
+      p.price,
+      p.trade_type,
+      p.content,
+      p.status,
+      p.created_at,
+      p.view_count,
+      p.member_id,
+      p.location,
+      -- 메인 이미지 URL 추가
+      COALESCE(pp.photo_url, '') as mainPhotoUrl,
+      -- 닉네임 추가
+      m.nickname as nickname,
+      
+      -- cars 테이블
+      c.post_id AS c_post_id,
+      c.brand AS c_brand,
+      c.model AS c_model,
+      c.year AS c_year,
+      c.mileage AS c_mileage,
+      c.fuel_type AS c_fuel_type,
+      c.transmission AS c_transmission,
+      
+      -- real_estates 테이블
+      re.post_id AS re_post_id,
+      re.property_type AS re_property_type,
+      re.area AS re_area,
+      re.rooms AS re_rooms,
+      re.floor AS re_floor,
+      re.deal_type AS re_deal_type,
+      
+      -- used_items 테이블
+      ui.post_id AS ui_post_id,
+      ui.category_id AS ui_category_id,
+      ui.conditions AS ui_conditions,
+      
+             -- categories 테이블
+       cat.name AS ui_category_id
+      
+  FROM posts p
+  LEFT JOIN (
+    SELECT post_id, photo_url,
+      ROW_NUMBER() OVER (PARTITION BY post_id ORDER BY is_main DESC, photo_id ASC) as rn
+    FROM post_photos
+  ) pp ON p.post_id = pp.post_id AND pp.rn = 1
+  LEFT JOIN members m ON m.member_id = p.member_id
+  LEFT JOIN cars c ON c.post_id = p.post_id AND p.post_type = 'CARS'
+  LEFT JOIN real_estates re ON re.post_id = p.post_id AND p.post_type = 'REAL_ESTATES'
+  LEFT JOIN used_items ui ON ui.post_id = p.post_id AND p.post_type = 'ITEMS'
+  LEFT JOIN categories cat ON ui.category_id = cat.category_id
+
+  <where>
+    <!-- ✅ 지역 매칭 필수: posts.location 이 member_regions.region_id 에 존재 -->
+    <if test="memberId != null">
+      AND EXISTS (
+        SELECT 1
+        FROM member_regions mr
+        WHERE mr.region_id = p.location
+          AND mr.member_id = #{memberId}
+      )
+    </if>
+    <!-- 키워드 검색 -->
+    <if test="kw != ''">
+      AND (
+        -- posts
+        LOWER(p.title)       LIKE CONCAT('%', LOWER(#{kw}), '%')
+       <!--  OR LOWER(p.content)  LIKE CONCAT('%', LOWER(#{kw}), '%')
+        OR LOWER(p.trade_type) LIKE CONCAT('%', LOWER(#{kw}), '%')
+        OR LOWER(p.status)   LIKE CONCAT('%', LOWER(#{kw}), '%')
+        OR LOWER(p.post_type)LIKE CONCAT('%', LOWER(#{kw}), '%')
+        OR CAST(p.price AS CHAR) LIKE CONCAT('%', #{kw}, '%')
+        OR LOWER(p.detail_location)  LIKE CONCAT('%', LOWER(#{kw}), '%')
+
+         cars
+        OR LOWER(c.brand) LIKE CONCAT('%', LOWER(#{kw}), '%')
+        OR LOWER(c.model) LIKE CONCAT('%', LOWER(#{kw}), '%')
+        OR CAST(c.year AS CHAR)    LIKE CONCAT('%', #{kw}, '%')
+        OR CAST(c.mileage AS CHAR) LIKE CONCAT('%', #{kw}, '%')
+        OR LOWER(c.fuel_type)      LIKE CONCAT('%', LOWER(#{kw}), '%')
+        OR LOWER(c.transmission)   LIKE CONCAT('%', LOWER(#{kw}), '%')
+
+         real_estates
+        OR LOWER(re.property_type) LIKE CONCAT('%', LOWER(#{kw}), '%')
+        OR CAST(re.area  AS CHAR)  LIKE CONCAT('%', #{kw}, '%')
+        OR CAST(re.rooms AS CHAR)  LIKE CONCAT('%', #{kw}, '%')
+        OR CAST(re.floor AS CHAR)  LIKE CONCAT('%', #{kw}, '%')
+        OR LOWER(re.deal_type)     LIKE CONCAT('%', LOWER(#{kw}), '%')
+
+         used_items
+        OR CAST(ui.category_id AS CHAR) LIKE CONCAT('%', #{kw}, '%')
+        OR LOWER(ui.conditions)         LIKE CONCAT('%', LOWER(#{kw}), '%')
+
+         categories
+        OR LOWER(cat.name) LIKE CONCAT('%', LOWER(#{kw}), '%') -->
+      )
+    </if>
+
+			
+			<!-- 게시글 타입 필터 -->
+			<if test="postType != null and postType != '' and postType != 'ALL'">
+				<if test="kw != ''">AND</if>
+				p.post_type = #{postType}
+			</if>
+			
+			<!-- 상태 필터 -->
+			<if test="status != null and status != '' and status != 'ALL'">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL')">AND</if>
+				p.status = #{status}
+			</if>
+			
+			<!-- 거래 타입 필터 -->
+			<if test="tradeType != null and tradeType != '' and tradeType != 'ALL'">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL')">AND</if>
+				p.trade_type = #{tradeType}
+			</if>
+			
+			<!-- 가격 범위 필터 -->
+			<!-- <if test="minPrice != null">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL')">AND</if>
+				p.price >= #{minPrice}
+			</if>
+			<if test="maxPrice != null">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null">AND</if>
+				p.price <= #{maxPrice}
+			</if> -->
+			
+			<!-- 자동차 연식 범위 필터 -->
+			<!-- <if test="minYear != null">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null or maxPrice != null">AND</if>
+				c.year >= #{minYear}
+			</if>
+			<if test="maxYear != null">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null or maxPrice != null or minYear != null">AND</if>
+				c.year <= #{maxYear}
+			</if> -->
+			
+			<!-- 부동산 면적 범위 필터 -->
+			<!-- <if test="minArea != null">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null or maxPrice != null or minYear != null or maxYear != null">AND</if>
+				re.area >= #{minArea}
+			</if>
+			<if test="maxArea != null">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null or maxPrice != null or minYear != null or maxYear != null or minArea != null">AND</if>
+				re.area <= #{maxArea}
+			</if> -->
+			
+			<!-- 중고물품 카테고리 필터 -->
+			<if test="categoryId != null and categoryId != '' and categoryId != 'ALL'">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null or maxPrice != null or minYear != null or maxYear != null or minArea != null or maxArea != null">AND</if>
+				ui.category_id = #{categoryId}
+			</if>
+			
+			  <!-- 지역 필터 -->
+			  <!-- <if test="regionId != null and regionId != 0">
+			    <if test="(postType != null and postType != '' and postType != 'ALL') or (kw != '')">AND</if>
+			    p.location = #{regionId}
+			  </if> -->
+			
+		</where>
+		
+		<!-- 정렬 -->
+		<choose>
+			<when test="sortBy != null and sortBy != ''">
+				<choose>
+					<when test="sortBy == 'price'">
+						ORDER BY p.price 
+						<if test="sortOrder == 'desc'">DESC</if>
+						<if test="sortOrder == 'asc' or sortOrder == null">ASC</if>
+					</when>
+					<when test="sortBy == 'created_at'">
+						ORDER BY p.created_at 
+						<if test="sortOrder == 'desc' or sortOrder == null">DESC</if>
+						<if test="sortOrder == 'asc'">ASC</if>
+					</when>
+					<when test="sortBy == 'view_count'">
+						ORDER BY p.view_count 
+						<if test="sortOrder == 'desc'">DESC</if>
+						<if test="sortOrder == 'asc'">ASC</if>
+					</when>
+					<otherwise>
+						ORDER BY p.post_id DESC
+					</otherwise>
+				</choose>
+			</when>
+			<otherwise>
+				ORDER BY p.post_id DESC
+			</otherwise>
+		</choose>
+		
+		<!-- 페이징 -->
+		LIMIT #{size} OFFSET #{offset}
+	</select>
+
+	<!-- 검색 결과 개수 조회 -->
+	<select id="countSearchAll" resultType="int">
+		<bind name="kw" value="keyword != null ? keyword.trim() : ''" />
+		
+		SELECT COUNT(*)
+		FROM posts p
+		LEFT JOIN cars c ON c.post_id = p.post_id AND p.post_type = 'CARS'
+		LEFT JOIN real_estates re ON re.post_id = p.post_id AND p.post_type = 'REAL_ESTATES'
+		LEFT JOIN used_items ui ON ui.post_id = p.post_id AND p.post_type = 'ITEMS'
+		LEFT JOIN categories cat ON ui.category_id = cat.category_id
+		
+		<where>
+		<!-- ✅ 지역 매칭 필수: posts.location 이 member_regions.region_id 에 존재 -->
+		    <if test="memberId != null">
+		      AND EXISTS (
+		        SELECT 1
+		        FROM member_regions mr
+		        WHERE mr.region_id = p.location
+		          AND mr.member_id = #{memberId}
+		      )
+		    </if>
+		
+			<!-- 키워드 검색 -->
+			<if test="kw != ''">
+			AND
+				(
+					-- posts 테이블 검색
+					LOWER(p.title) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					<!-- OR LOWER(p.content) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					OR LOWER(p.trade_type) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					OR LOWER(p.status) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					OR LOWER(p.post_type) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					OR CAST(p.price AS CHAR) LIKE CONCAT('%', #{kw}, '%')
+					OR LOWER(p.detail_location) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					
+					 cars 테이블 검색
+					OR LOWER(c.brand) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					OR LOWER(c.model) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					OR CAST(c.year AS CHAR) LIKE CONCAT('%', #{kw}, '%')
+					OR CAST(c.mileage AS CHAR) LIKE CONCAT('%', #{kw}, '%')
+					OR LOWER(c.fuel_type) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					OR LOWER(c.transmission) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					
+					 real_estates 테이블 검색
+					OR LOWER(re.property_type) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					OR CAST(re.area AS CHAR) LIKE CONCAT('%', #{kw}, '%')
+					OR CAST(re.rooms AS CHAR) LIKE CONCAT('%', #{kw}, '%')
+					OR CAST(re.floor AS CHAR) LIKE CONCAT('%', #{kw}, '%')
+					OR LOWER(re.deal_type) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					
+					 used_items 테이블 검색
+					OR CAST(ui.category_id AS CHAR) LIKE CONCAT('%', #{kw}, '%')
+					OR LOWER(ui.conditions) LIKE CONCAT('%', LOWER(#{kw}), '%')
+					
+					 categories 테이블 검색
+					OR LOWER(cat.name) LIKE CONCAT('%', LOWER(#{kw}), '%') -->
+				)
+			</if>
+			
+			<!-- 게시글 타입 필터 -->
+			<if test="postType != null and postType != '' and postType != 'ALL'">
+				<if test="kw != ''">AND</if>
+				p.post_type = #{postType}
+			</if>
+			
+			<!-- 상태 필터 -->
+			<if test="status != null and status != '' and status != 'ALL'">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL')">AND</if>
+				p.status = #{status}
+			</if>
+			
+			<!-- 거래 타입 필터 -->
+			<if test="tradeType != null and tradeType != '' and tradeType != 'ALL'">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL')">AND</if>
+				p.trade_type = #{tradeType}
+			</if>
+			
+			<!-- 가격 범위 필터 -->
+			<!-- <if test="minPrice != null">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL')">AND</if>
+				p.price >= #{minPrice}
+			</if>
+			<if test="maxPrice != null">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null">AND</if>
+				p.price <= #{maxPrice}
+			</if> -->
+			
+			<!-- 자동차 연식 범위 필터 -->
+			<!-- <if test="minYear != null">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null or maxPrice != null">AND</if>
+				c.year >= #{minYear}
+			</if>
+			<if test="maxYear != null">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null or maxPrice != null or minYear != null">AND</if>
+				c.year <= #{maxYear}
+			</if> -->
+			
+			<!-- 부동산 면적 범위 필터 -->
+			<!-- <if test="minArea != null">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null or maxPrice != null or minYear != null or maxYear != null">AND</if>
+				re.area >= #{minArea}
+			</if>
+			<if test="maxArea != null">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null or maxPrice != null or minYear != null or maxYear != null or minArea != null">AND</if>
+				re.area <= #{maxArea}
+			</if> -->
+			
+			<!-- 중고물품 카테고리 필터 -->
+			<if test="categoryId != null and categoryId != '' and categoryId != 'ALL'">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null or maxPrice != null or minYear != null or maxYear != null or minArea != null or maxArea != null">AND</if>
+				ui.category_id = #{categoryId}
+			</if>
+			
+			<!-- 지역 필터 -->
+			<!-- <if test="regionId != null and regionId != 0">
+				<if test="kw != '' or (postType != null and postType != '' and postType != 'ALL') or (status != null and status != '' and status != 'ALL') or (tradeType != null and tradeType != '' and tradeType != 'ALL') or minPrice != null or maxPrice != null or minYear != null or maxYear != null or minArea != null or maxArea != null or (categoryId != null and categoryId != '' and categoryId != 'ALL')">AND</if>
+				p.location = #{regionId}
+			</if> -->
+		</where>
+	</select>
+
+   <!-- 판매 상태 변경 -->
+   <update id="updatePostStatus">
+      UPDATE posts 
+      SET status = #{status},
+          updated_at = CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')
+      WHERE post_id = #{postId}
+   </update>
+
+   <!-- 판매 상태 변경 (거래자 포함) -->
+   <update id="updatePostStatusWithBuyer">
+      UPDATE posts 
+      SET status = #{status},
+          buyer_id = #{buyerId},
+          updated_at = CONVERT_TZ(NOW(), 'UTC', 'Asia/Seoul')
+      WHERE post_id = #{postId}
+   </update>
+
+   <!-- 채팅방 참여자 조회 -->
+   <select id="getChatParticipants" resultType="map">
+      SELECT DISTINCT
+          m.member_id AS memberId,
+          m.nickname AS nickname,
+          m.profile_image_url AS profileImage,
+          cr.chat_room_id AS chatRoomId,
+          COUNT(cm.message_id) AS messageCount,
+          MAX(cm.created_at) AS lastMessageTime
+      FROM chatroom cr
+      INNER JOIN members m ON (m.member_id = cr.buyer_id)
+      LEFT JOIN chatmessage cm ON cm.chat_room_id = cr.chat_room_id 
+          AND cm.sender_id = m.member_id
+      WHERE cr.product_id = #{postId}
+          AND cr.buyer_exit_status = 0
+          AND cr.seller_exit_status = 0
+      GROUP BY m.member_id, m.nickname, m.profile_image_url, cr.chat_room_id
+      HAVING messageCount > 0
+      ORDER BY lastMessageTime DESC
+   </select>
+
+   <!-- 구매내역 조회 -->
+   <select id="getPurchaseHistory" resultType="map">
+      SELECT 
+          p.post_id AS postId,
+          p.title,
+          p.price,
+          p.status,
+          p.trade_type AS tradeType,
+          p.post_type AS postType,
+          p.created_at AS createdAt,
+          p.updated_at AS updatedAt,
+          p.buyer_id AS buyerId,
+          p.member_id AS sellerId,
+          m.nickname AS sellerNickname,
+          ph.photo_url AS mainPhotoUrl,
+          ph.is_main AS isMain
+      FROM posts p
+      INNER JOIN members m ON p.member_id = m.member_id
+      LEFT JOIN post_photos ph ON p.post_id = ph.post_id AND ph.is_main = 1
+      WHERE p.buyer_id = #{memberId}
+      ORDER BY p.updated_at DESC, p.created_at DESC
+   </select>
+
+<!-- 지역검색 -->
+	<select id="getOneRegion" resultType="boot.sagu.dto.RegionDto">
+		select * from regions where region_id=#{regionId}
+	</select>
+
+	<!-- 지역별 게시물 목록 조회 -->
+	<select id="getPostListByRegion" resultType="map">
+		SELECT
+			p.post_id AS postId,
+			p.member_id AS memberId,
+			p.title AS title,
+			p.price AS price,
+			p.post_type AS postType,
+			p.trade_type AS tradeType,
+			p.created_at AS createdAt,
+			p.view_count AS viewCount,
+			p.status AS status,
+			(SELECT photo_url FROM post_photos WHERE post_id = p.post_id AND is_main = 1 LIMIT 1) AS mainPhotoUrl,
+			m.nickname AS nickname,
+			r.province,
+			r.city,
+			r.district,
+			r.town
+		FROM posts p
+		LEFT JOIN members m ON m.member_id = p.member_id
+		LEFT JOIN regions r ON r.region_id = p.location
+		<where>
+			<if test="province != null and province != ''">
+				AND r.province = #{province}
+			</if>
+			<if test="city != null and city != ''">
+				AND r.city = #{city}
+			</if>
+			<if test="district != null and district != ''">
+				AND r.district = #{district}
+			</if>
+			<if test="town != null and town != ''">
+				AND r.town = #{town}
+			</if>
+		</where>
+		ORDER BY p.post_id DESC
+	</select>
+   <!-- 후기 조회 -->
+   <select id="getReviewsForUser" resultType="map">
+      SELECT 
+          tr.review_id AS review_id,
+          tr.post_id AS post_id,
+          tr.reviewer_id AS reviewer_id,
+          tr.review_opposite_id AS review_opposite_id,
+          tr.rating AS rating,
+          tr.comment AS comment,
+          tr.created_at AS created_at,
+          p.title AS post_title,
+          p.price AS post_price,
+          m.nickname AS reviewer_nickname,
+          m.profile_image_url AS reviewer_profile_image
+      FROM trade_reviews tr
+      INNER JOIN posts p ON tr.post_id = p.post_id
+      INNER JOIN members m ON tr.reviewer_id = m.member_id
+      WHERE tr.review_opposite_id = #{memberId}
+      ORDER BY tr.created_at DESC
+   </select>
+   
+   <!-- 총 게시물 수 조회 -->
+   <select id="getTotalPostsCount" resultType="int">
+      SELECT COUNT(*) FROM posts
+   </select>
+
+</mapper>
