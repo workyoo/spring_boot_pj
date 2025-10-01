@@ -71,32 +71,6 @@ CRUD, 검색, 채팅, 신고, 관리자 기능을 포함하여 **거래 프로�
 
 <hr style="border:0; border-top:1px solid #ccc; margin:20px 0;" />
 
-## 📷 실행 화면
-
-### 1. 게시글 등록 / 수정 / 삭제 (CRUD) / 찜 & 거래 상태 변경
-![등록](https://github.com/user-attachments/assets/7ceeace1-4df5-4b4c-a7cb-76cc804fea90)
-
-![수정,삭제](https://github.com/user-attachments/assets/4cd50c4f-d7c9-4214-86bf-e7dea3991f90)
-
-게시글을 작성하고 수정·삭제하는 과정 /
-*찜(즐겨찾기) 추가 및 판매중 → 예약중 → 완료 상태 전환*
-
-<hr style="border:0; border-top:1px solid #ccc; margin:20px 0;" />
-
-### 2. 검색 및 필터
-![검색](https://github.com/user-attachments/assets/d45b04f2-cd28-48a9-8bd2-7ee6befc5992)
-
-*키워드, 카테고리, 지역 조건을 활용한 검색 결과*
-
-<hr style="border:0; border-top:1px solid #ccc; margin:20px 0;" />
-
-### 3. 신고 & 관리자 페이지
-![신고,관리자](https://github.com/user-attachments/assets/8e54f411-e62f-4822-804b-56ac1d6294b3)
-
-*신고 접수 및 관리자 페이지에서 제재 처리*
-
-<hr style="border:0; border-top:1px solid #ccc; margin:20px 0;" />
-
 ## 📝 회고
 - **SQL 최적화 경험**: 동적 SQL과 인덱싱을 통해 실제 성능 개선을 경험  
 - **보안 학습**: JWT + Spring Security 적용으로 인증/인가 흐름 이해도 상승  
